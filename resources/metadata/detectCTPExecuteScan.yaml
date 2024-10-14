@@ -119,6 +119,7 @@ spec:
           - --blackduck.trust.cert=true
           - --logging.level.com.synopsys.integration=DEBUG
           - --detect.maven.excluded.scopes=test
+          - --detect.blackduck.signature.scanner.individual.file.matching=ALL
         scope:
           - PARAMETERS
           - STAGES
@@ -139,6 +140,7 @@ spec:
         aliases:
           - name: detect/groups
         type: "[]string"
+        mandatory: true
         scope:
           - PARAMETERS
           - STAGES
@@ -151,8 +153,9 @@ spec:
         aliases:
           - name: detect/failOn
         type: "[]string"
+        mandatory: true
         default:
-          - BLOCKER
+          - NONE
         possibleValues:
           - ALL
           - BLOCKER
@@ -358,6 +361,8 @@ spec:
         aliases:
           - name: detect/detectTools
         type: "[]string"
+        mandatory: true
+        default: [SIGNATURE_SCAN]
         scope:
           - PARAMETERS
           - STAGES

@@ -288,10 +288,10 @@ func addDetectCTPExecuteScanFlags(cmd *cobra.Command, stepConfig *detectCTPExecu
 	cmd.Flags().StringSliceVar(&stepConfig.ScanPaths, "scanPaths", []string{`.`}, "List of paths which should be scanned by the Synopsis Detect (formerly BlackDuck) scan.")
 	cmd.Flags().StringVar(&stepConfig.DependencyPath, "dependencyPath", `.`, "Absolute Path of the dependency management file of the project. This path represents the folder which contains the pom file, package.json etc. If the project contains multiple pom files, provide the path to the parent pom file or the base folder of the project")
 	cmd.Flags().BoolVar(&stepConfig.Unmap, "unmap", false, "Unmap flag will unmap all previous code locations and keep only the current scan results in the specified project version. Set this parameter to true, when the project version needs to store only the latest scan results.")
-	cmd.Flags().StringSliceVar(&stepConfig.ScanProperties, "scanProperties", []string{`--blackduck.signature.scanner.memory=4096`, `--detect.timeout=6000`, `--blackduck.trust.cert=true`, `--logging.level.com.synopsys.integration=DEBUG`, `--detect.maven.excluded.scopes=test`}, "Properties passed to the Synopsis Detect (formerly BlackDuck) scan. You can find details in the [Synopsis Detect documentation](https://community.synopsys.com/s/document-item?bundleId=integrations-detect&topicId=properties%2Fall-properties.html&_LANG=enus)")
+	cmd.Flags().StringSliceVar(&stepConfig.ScanProperties, "scanProperties", []string{`--blackduck.signature.scanner.memory=4096`, `--detect.timeout=6000`, `--blackduck.trust.cert=true`, `--logging.level.com.synopsys.integration=DEBUG`, `--detect.maven.excluded.scopes=test`, `--detect.blackduck.signature.scanner.individual.file.matching=ALL`}, "Properties passed to the Synopsis Detect (formerly BlackDuck) scan. You can find details in the [Synopsis Detect documentation](https://community.synopsys.com/s/document-item?bundleId=integrations-detect&topicId=properties%2Fall-properties.html&_LANG=enus)")
 	cmd.Flags().StringVar(&stepConfig.ServerURL, "serverUrl", os.Getenv("PIPER_serverUrl"), "Server URL to the Synopsis Detect (formerly BlackDuck) Server.")
 	cmd.Flags().StringSliceVar(&stepConfig.Groups, "groups", []string{}, "Users groups to be assigned for the Project")
-	cmd.Flags().StringSliceVar(&stepConfig.FailOn, "failOn", []string{`BLOCKER`}, "Mark the current build as fail based on the policy categories applied.")
+	cmd.Flags().StringSliceVar(&stepConfig.FailOn, "failOn", []string{`NONE`}, "Mark the current build as fail based on the policy categories applied.")
 	cmd.Flags().StringVar(&stepConfig.VersioningModel, "versioningModel", `major`, "The versioning model used for result reporting (based on the artifact version). Example 1.2.3 using `major` will result in version 1")
 	cmd.Flags().StringVar(&stepConfig.Version, "version", os.Getenv("PIPER_version"), "Defines the version number of the artifact being build in the pipeline. It is used as source for the Detect version.")
 	cmd.Flags().StringVar(&stepConfig.CustomScanVersion, "customScanVersion", os.Getenv("PIPER_customScanVersion"), "A custom version used along with the uploaded scan results.")
@@ -311,7 +311,7 @@ func addDetectCTPExecuteScanFlags(cmd *cobra.Command, stepConfig *detectCTPExecu
 	cmd.Flags().StringSliceVar(&stepConfig.IncludedPackageManagers, "includedPackageManagers", []string{}, "The package managers that need to be included for this scan. Providing the package manager names with this parameter will ensure that the build descriptor file of that package manager will be searched in the scan folder For the complete list of possible values for this parameter, please refer [Synopsys detect documentation](https://community.synopsys.com/s/document-item?bundleId=integrations-detect&topicId=properties%2Fconfiguration%2Fdetector.html&_LANG=enus&anchor=detector-types-included-advanced)")
 	cmd.Flags().StringSliceVar(&stepConfig.ExcludedPackageManagers, "excludedPackageManagers", []string{}, "The package managers that need to be excluded for this scan. Providing the package manager names with this parameter will ensure that the build descriptor file of that package manager will be ignored in the scan folder For the complete list of possible values for this parameter, please refer [Synopsys detect documentation](https://community.synopsys.com/s/document-item?bundleId=integrations-detect&topicId=properties%2Fconfiguration%2Fdetector.html&_LANG=enus&anchor=detector-types-excluded-advanced)")
 	cmd.Flags().StringSliceVar(&stepConfig.MavenExcludedScopes, "mavenExcludedScopes", []string{}, "The maven scopes that need to be excluded from the scan. For example, setting the value 'test' will exclude all components which are defined with a test scope in maven")
-	cmd.Flags().StringSliceVar(&stepConfig.DetectTools, "detectTools", []string{}, "The type of BlackDuck scanners to include while running the BlackDuck scan. By default All scanners are included. For the complete list of possible values, Please refer [Synopsys detect documentation](https://community.synopsys.com/s/document-item?bundleId=integrations-detect&topicId=properties%2Fconfiguration%2Fpaths.html&_LANG=enus&anchor=detect-tools-included)")
+	cmd.Flags().StringSliceVar(&stepConfig.DetectTools, "detectTools", []string{`SIGNATURE_SCAN`}, "The type of BlackDuck scanners to include while running the BlackDuck scan. By default All scanners are included. For the complete list of possible values, Please refer [Synopsys detect documentation](https://community.synopsys.com/s/document-item?bundleId=integrations-detect&topicId=properties%2Fconfiguration%2Fpaths.html&_LANG=enus&anchor=detect-tools-included)")
 	cmd.Flags().BoolVar(&stepConfig.ScanOnChanges, "scanOnChanges", false, "This flag determines if the scan is submitted to the server. If set to true, then the scan request is submitted to the server only when changes are detected in the Open Source Bill of Materials If the flag is set to false, then the scan request is submitted to server regardless of any changes. For more details please refer to the [documentation](https://github.com/blackducksoftware/detect_rescan/blob/master/README.md)")
 	cmd.Flags().BoolVar(&stepConfig.SuccessOnSkip, "successOnSkip", true, "This flag allows forces Black Duck to exit with 0 error code if any step is skipped")
 	cmd.Flags().StringSliceVar(&stepConfig.CustomEnvironmentVariables, "customEnvironmentVariables", []string{}, "A list of environment variables which can be set to prepare the environment to run a BlackDuck scan. This includes a list of environment variables defined by Synopsys. The full list can be found [here](https://community.synopsys.com/s/document-item?bundleId=integrations-detect&topicId=configuring%2Fenvvars.html&_LANG=enus) This list affects the detect script downloaded while running the scan. Right now only detect7.sh is available for downloading")
@@ -340,6 +340,9 @@ func addDetectCTPExecuteScanFlags(cmd *cobra.Command, stepConfig *detectCTPExecu
 	cmd.MarkFlagRequired("token")
 	cmd.MarkFlagRequired("projectName")
 	cmd.MarkFlagRequired("serverUrl")
+	cmd.MarkFlagRequired("groups")
+	cmd.MarkFlagRequired("failOn")
+	cmd.MarkFlagRequired("detectTools")
 }
 
 // retrieve step metadata
@@ -443,7 +446,7 @@ func detectCTPExecuteScanMetadata() config.StepData {
 						Type:        "[]string",
 						Mandatory:   false,
 						Aliases:     []config.Alias{{Name: "detect/scanProperties"}},
-						Default:     []string{`--blackduck.signature.scanner.memory=4096`, `--detect.timeout=6000`, `--blackduck.trust.cert=true`, `--logging.level.com.synopsys.integration=DEBUG`, `--detect.maven.excluded.scopes=test`},
+						Default:     []string{`--blackduck.signature.scanner.memory=4096`, `--detect.timeout=6000`, `--blackduck.trust.cert=true`, `--logging.level.com.synopsys.integration=DEBUG`, `--detect.maven.excluded.scopes=test`, `--detect.blackduck.signature.scanner.individual.file.matching=ALL`},
 					},
 					{
 						Name:        "serverUrl",
@@ -459,7 +462,7 @@ func detectCTPExecuteScanMetadata() config.StepData {
 						ResourceRef: []config.ResourceReference{},
 						Scope:       []string{"PARAMETERS", "STAGES", "STEPS"},
 						Type:        "[]string",
-						Mandatory:   false,
+						Mandatory:   true,
 						Aliases:     []config.Alias{{Name: "detect/groups"}},
 						Default:     []string{},
 					},
@@ -468,9 +471,9 @@ func detectCTPExecuteScanMetadata() config.StepData {
 						ResourceRef: []config.ResourceReference{},
 						Scope:       []string{"PARAMETERS", "STAGES", "STEPS"},
 						Type:        "[]string",
-						Mandatory:   false,
+						Mandatory:   true,
 						Aliases:     []config.Alias{{Name: "detect/failOn"}},
-						Default:     []string{`BLOCKER`},
+						Default:     []string{`NONE`},
 					},
 					{
 						Name:        "versioningModel",
@@ -653,9 +656,9 @@ func detectCTPExecuteScanMetadata() config.StepData {
 						ResourceRef: []config.ResourceReference{},
 						Scope:       []string{"PARAMETERS", "STAGES", "STEPS"},
 						Type:        "[]string",
-						Mandatory:   false,
+						Mandatory:   true,
 						Aliases:     []config.Alias{{Name: "detect/detectTools"}},
-						Default:     []string{},
+						Default:     []string{`SIGNATURE_SCAN`},
 					},
 					{
 						Name:        "scanOnChanges",
